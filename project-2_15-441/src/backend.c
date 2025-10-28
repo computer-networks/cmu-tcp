@@ -210,6 +210,7 @@ void single_send(cmu_socket_t *sock, uint8_t *data, int buf_len) {
           break;
         }
       }
+      free(msg);
 
       data_offset += payload_len;
     }
