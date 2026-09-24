@@ -26,11 +26,7 @@ The following files have been provided for you:
 
 * `Vagrantfile`: Defines the structure, IP addresses, and dependencies in the containers. Feel free to modify this file to add any additional testing tools as you see fit. Remember to document your changes in `tests.txt`!
 
-* `README.md`: A description of your files, as well as your algorithm, if you choose to implement it in CP2.
-
 * `tests.txt`: A brief writeup describing your testing strategy, and any tools you used in the process of testing.
-
-* `gen_graph.py`: Takes in a PCAP file and generates a graph. Feel free to modify this file to profile Reno and your own algorithm in CP2.
 
 * `capture_packets.sh`: Captures packets from the server and client containers and saves them to a PCAP file.
 
@@ -38,15 +34,13 @@ The following files have been provided for you:
 
 * `test_cp1.py`: Test script for CP1 that is executed with `make test`. You should add your own tests to this file.
 
-* `test_cp2.py`: Test script for CP2 that can be executed with `make test`. You should add your own tests to this file.
-
 * `grading.h`: These are variables that we will use to test your implementation. We will be replacing this file when running tests, and hence you should test your implementation with different values.
 
 * `server.c`: An application using the server side of your transport protocol. We will test your code using a different server program, so do not keep any variables or functions here that your protocol uses.
 
 * `client.c`: An application using the client side of your transport protocol. We will test your code using a different client application, so do not keep any variables or functions here that your protocol uses.
 
-* `cmu_packet.h`: This file describes the basic packet format and header and provides helper functions that will help you handle packets. You are not allowed to modify this file! The scripts that we provide to help you graph your packet traces rely on this file being unchanged. All the communication between your server and client will use UDP as the underlying protocol. All packets will begin with the common header described as follows:
+* `cmu_packet.h`: This file describes the basic packet format and header and provides helper functions that will help you handle packets. You are not allowed to modify this file! The packet-analysis tools rely on this file being unchanged. All the communication between your server and client will use UDP as the underlying protocol. All packets will begin with the common header described as follows:
 
     * Course Number 		    [4 bytes]
     * Source Port 			    [2 bytes]
@@ -58,7 +52,7 @@ The following files have been provided for you:
     * Flags				        [1 byte]
     * Advertised Window		    [2 bytes]
     * Extension length		    [2 bytes]
-    * Extension Data		    [You may use it when designing your own congestion control algorithm]
+    * Extension Data		    [You may use it when designing your own congestion control algorithm in the lab]
 
 ## Manual test
 You can manually test your code by running the server and client applications in the containers while also capturing packets using `capture_packets.sh`. You can then use the same script or [Wireshark](https://www.wireshark.org/#download) to view the packets.
@@ -103,6 +97,11 @@ Once the server is done. Stop the packet capture and analyze the packets. In the
 ```
 
 You can also access the capture file (`cap.pcap` in this example) from your host machine and open it with Wireshark. You should use the `utils/tcp.lua` plugin to decode CMU-TCP headers. To do so, copy the file to the directory described in <https://www.wireshark.org/docs/wsug_html_chunked/ChPluginFolders.html>.
+
+For CP2, instrument your sender to log timestamps, congestion-window size (`cwnd`),
+slow-start threshold (`ssthresh`), and congestion-control stage whenever they change.
+Plot `cwnd` over time from these logs and label slow start, congestion avoidance,
+fast recovery, triple-duplicate-ACK events, and timeouts.
 
 ## Automatic tests
 

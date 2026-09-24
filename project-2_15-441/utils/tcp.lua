@@ -23,12 +23,19 @@ local f_extension_data = ProtoField.string("cmutcp.extension_data", "Extension D
 tcp.fields = { f_identifier, f_source_port, f_destination_port, f_seq_num, f_ack_num, f_hlen, f_plen, f_flags, f_advertised_window, f_extension_length , f_extension_data}
 
 function tcp.dissector(tvb, pInfo, root) -- Tvb, Pinfo, TreeItem
-   if (tvb:len() ~= tvb:reported_len()) then
+   if (tvb:len() < 25 or tvb:len() ~= tvb:reported_len()) then
       return 0 -- ignore partially captured packets
       -- this can/may be re-enabled only for unfragmented UDP packets
    end
 
-   local t = root:add(tcp, tvb(0,25))
+   if tvb(0,4):uint() ~= 15441 then return 0 end
+   local hlen = tvb(16,2):uint()
+   local plen = tvb(18,2):uint()
+   local extension_length = tvb(23,2):uint()
+   if hlen < 25 or hlen > plen or plen ~= tvb:len() or
+      extension_length ~= hlen - 25 then return 0 end
+
+   local t = root:add(tcp, tvb(0,hlen))
    t:add(f_identifier, tvb(0,4))
    t:add(f_source_port, tvb(4,2))
    t:add(f_destination_port, tvb(6,2))
@@ -39,7 +46,6 @@ function tcp.dissector(tvb, pInfo, root) -- Tvb, Pinfo, TreeItem
    local f = t:add(f_flags, tvb(20,1))
    t:add(f_advertised_window, tvb(21,2))
    t:add(f_extension_length, tvb(23,2))
-   local extension_length = tvb(23,1):int()
    t:add(f_extension_data, tvb(25,extension_length))
 
 

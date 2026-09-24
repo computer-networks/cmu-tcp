@@ -9,7 +9,7 @@
 
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 HOST=$(hostname)
-IFNAME=$(ifconfig | grep -B1 10.0.1. | grep -o "^\w*")
+IFNAME=${IFNAME:-$(ifconfig | grep -B1 10.0.1. | grep -o "^\w*")}
 FUNCTION_TO_RUN=$1
 PCAP_NAME=$2
 
@@ -27,16 +27,16 @@ if [ -z "$PCAP_NAME" ]
 fi
 
 start() {
-    sudo tcpdump -i $IFNAME -w $PCAP_NAME udp > /dev/null 2> /dev/null < \
+    sudo tcpdump -i "$IFNAME" -w "$PCAP_NAME" -s 0 -U udp > /dev/null 2> /dev/null < \
         /dev/null &
 }
 
 stop() {
-    sudo pkill -f "tcpdump -i $IFNAME -w $PCAP_NAME udp"
+    sudo pkill -INT -f "tcpdump -i $IFNAME -w $PCAP_NAME -s 0 -U udp"
 }
 
 analyze() {
-    tshark -X lua_script:$DIR/tcp.lua -R "cmutcp and not icmp" -r $PCAP_NAME \
+    tshark -X "lua_script:$DIR/tcp.lua" -Y "cmutcp and not icmp" -r "$PCAP_NAME" \
     -T fields \
     -e frame.time_relative \
     -e ip.src \
@@ -54,4 +54,7 @@ analyze() {
     -2
 }
 
-$FUNCTION_TO_RUN
+case "$FUNCTION_TO_RUN" in
+    start|stop|analyze) "$FUNCTION_TO_RUN" ;;
+    *) echo "Unknown action: $FUNCTION_TO_RUN" >&2; exit 1 ;;
+esac
